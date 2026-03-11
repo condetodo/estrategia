@@ -25,10 +25,10 @@
 - [x] 4.4 Vista filtrada: Mis Tareas
 
 ## Sprint 5: Pulido y Deploy
-- [ ] 5.1 Responsive design + mobile
-- [ ] 5.2 Importador de Excel
-- [ ] 5.3 Exportar a PDF / Excel
-- [ ] 5.4 Deploy: Vercel + Railway + dominio
+- [x] 5.1 Responsive design + mobile
+- [x] 5.2 Importador de Excel
+- [x] 5.3 Exportar a PDF / Excel
+- [x] 5.4 Deploy: Vercel + Railway (https://estrategia-chi.vercel.app)
 
 ## Post-MVP (Productización)
 - [ ] Multi-tenant
