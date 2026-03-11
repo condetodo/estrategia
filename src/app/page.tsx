@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { PlanView } from "@/components/plan-view";
 import type { PlanWithDetails } from "@/lib/types";
 
+// Always render at request time (needs DB data)
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const plan = await prisma.strategicPlan.findFirst({
     where: { status: "ACTIVE" },
