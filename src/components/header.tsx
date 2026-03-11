@@ -11,7 +11,7 @@ const tabs = [
   { label: "Herramientas", href: "/herramientas" },
 ];
 
-export function Header({ company, year }: { company: string; year: number }) {
+export function Header({ company, year }: { company?: string; year?: number } = {}) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
@@ -19,10 +19,14 @@ export function Header({ company, year }: { company: string; year: number }) {
     <header className="bg-primary text-white">
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold tracking-tight">{company}</h1>
-          <span className="rounded bg-white/15 px-2 py-0.5 text-sm font-medium">
-            {year}
-          </span>
+          <h1 className="text-lg font-bold tracking-tight">
+            {company ?? "Plan Estratégico Digital"}
+          </h1>
+          {year && (
+            <span className="rounded bg-white/15 px-2 py-0.5 text-sm font-medium">
+              {year}
+            </span>
+          )}
         </div>
 
         {/* User info */}

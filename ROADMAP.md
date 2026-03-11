@@ -30,7 +30,17 @@
 - [x] 5.3 Exportar a PDF / Excel
 - [x] 5.4 Deploy: Vercel + Railway (https://estrategia-chi.vercel.app)
 
+## Sprint 6: Creación de Plan desde Cero
+- [x] 6.1 Server Actions para ciclo de vida de planes (create, activate, archive, delete)
+- [x] 6.2 Empty state inteligente (admin vs no-admin) en todas las páginas
+- [x] 6.3 Wizard de creación de plan (4 pasos: datos, direcciones, áreas, activar)
+- [x] 6.4 Agregar items inline en el Gantt (+ por área)
+- [x] 6.5 Agregar/eliminar tareas inline en drill-down panel
+- [x] 6.6 Gestión de planes en Herramientas (listar, activar, archivar, eliminar)
+
 ## Post-MVP (Productización)
+- [ ] Vista personalizada por rol (usuarios ven solo sus áreas)
+- [ ] Clonar plan del año anterior
 - [ ] Multi-tenant
 - [ ] Templates por industria
 - [ ] Notificaciones (email/WhatsApp)

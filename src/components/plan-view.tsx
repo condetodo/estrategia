@@ -31,6 +31,8 @@ export function PlanView({
         <div className="flex-1 overflow-y-auto">
           <GanttView
             areas={plan.areas}
+            directions={plan.directions}
+            users={users}
             onItemClick={setSelectedItem}
             selectedItemId={selectedItem?.id ?? null}
           />

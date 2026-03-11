@@ -49,6 +49,38 @@ export type UserOption = {
   initials: string | null;
 };
 
+// -- Plan management types --
+
+export type PlanSummary = {
+  id: string;
+  year: number;
+  company: string;
+  status: string;
+  _count: { areas: number; directions: number };
+};
+
+export type WizardPlanData = {
+  id: string;
+  year: number;
+  company: string;
+  status: string;
+  directions: DirectionData[];
+  areas: { id: string; name: string; color: string; icon: string | null; order: number }[];
+};
+
+export const AREA_COLORS = [
+  { value: "#2563EB", label: "Azul" },
+  { value: "#16A34A", label: "Verde" },
+  { value: "#EA580C", label: "Naranja" },
+  { value: "#9333EA", label: "Violeta" },
+  { value: "#DC2626", label: "Rojo" },
+  { value: "#0891B2", label: "Turquesa" },
+  { value: "#D97706", label: "Ámbar" },
+  { value: "#DB2777", label: "Rosa" },
+] as const;
+
+// -- Constants --
+
 export const MONTHS = [
   "Ene", "Feb", "Mar", "Abr", "May", "Jun",
   "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
