@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -- Enums --
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+enum PlanStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum UserRole {
+  ADMIN
+  LEADER
+  VIEWER
+}
+
+// -- Models --
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(VIEWER)
+  initials      String?
+
+  accounts Account[]
+  sessions Session[]
+  items    Item[]    @relation("ItemResponsible")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model StrategicPlan {
+  id      String     @id @default(cuid())
+  year    Int
+  company String
+  status  PlanStatus @default(ACTIVE)
+
+  directions Direction[]
+  areas      Area[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([year, company])
+}
+
+model Direction {
+  id          String @id @default(cuid())
+  number      Int
+  description String
+
+  planId String
+  plan   StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  items Item[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Area {
+  id    String  @id @default(cuid())
+  name  String
+  color String
+  icon  String?
+  order Int     @default(0)
+
+  planId String
+  plan   StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  items Item[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id       String  @id @default(cuid())
+  subtheme String
+  agenda   String?
+  order    Int     @default(0)
+
+  areaId String
+  area   Area   @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  directionId String?
+  direction   Direction? @relation(fields: [directionId], references: [id], onDelete: SetNull)
+
+  responsibleId String?
+  responsible   User?   @relation("ItemResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+
+  tasks Task[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id         String     @id @default(cuid())
+  name       String
+  startMonth Int
+  endMonth   Int
+  status     TaskStatus @default(NOT_STARTED)
+  notes      String?
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
