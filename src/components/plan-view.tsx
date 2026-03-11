@@ -5,9 +5,15 @@ import { Header } from "@/components/header";
 import { DirectionsBar } from "@/components/directions-bar";
 import { GanttView } from "@/components/gantt-view";
 import { DrillDownPanel } from "@/components/drill-down-panel";
-import type { PlanWithDetails, ItemWithTasks } from "@/lib/types";
+import type { PlanWithDetails, ItemWithTasks, UserOption } from "@/lib/types";
 
-export function PlanView({ plan }: { plan: PlanWithDetails }) {
+export function PlanView({
+  plan,
+  users,
+}: {
+  plan: PlanWithDetails;
+  users: UserOption[];
+}) {
   const [selectedItem, setSelectedItem] = useState<ItemWithTasks | null>(null);
 
   const activeDirectionId = selectedItem?.direction?.id ?? null;
@@ -21,7 +27,7 @@ export function PlanView({ plan }: { plan: PlanWithDetails }) {
         activeDirectionId={activeDirectionId}
       />
 
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         <div className="flex-1 overflow-y-auto">
           <GanttView
             areas={plan.areas}
@@ -31,11 +37,21 @@ export function PlanView({ plan }: { plan: PlanWithDetails }) {
         </div>
 
         {selectedItem && (
-          <DrillDownPanel
-            key={selectedItem.id}
-            item={selectedItem}
-            onClose={() => setSelectedItem(null)}
-          />
+          <>
+            {/* Mobile overlay backdrop */}
+            <div
+              className="fixed inset-0 z-30 bg-black/30 lg:hidden"
+              onClick={() => setSelectedItem(null)}
+            />
+            <div className="fixed inset-y-0 right-0 z-40 w-full max-w-sm lg:relative lg:inset-auto lg:z-auto lg:w-96 lg:max-w-none">
+              <DrillDownPanel
+                key={selectedItem.id}
+                item={selectedItem}
+                users={users}
+                onClose={() => setSelectedItem(null)}
+              />
+            </div>
+          </>
         )}
       </div>
     </div>

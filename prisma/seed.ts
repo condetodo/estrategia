@@ -1,7 +1,11 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { TaskStatus, PlanStatus, UserRole } from "../src/generated/prisma/enums";
+
+// Default password for all seeded users
+const DEFAULT_PASSWORD = bcrypt.hashSync("plan2026", 10);
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -18,19 +22,19 @@ async function main() {
   // -- Users (responsibles from the spreadsheet) --
   const users = await Promise.all([
     prisma.user.create({
-      data: { name: "Federico Weiss", email: "fw@agropatagonico.com", role: UserRole.LEADER, initials: "FW" },
+      data: { name: "Federico Weiss", email: "fw@agropatagonico.com", password: DEFAULT_PASSWORD, role: UserRole.LEADER, initials: "FW" },
     }),
     prisma.user.create({
-      data: { name: "Pablo Sanchez", email: "ps@agropatagonico.com", role: UserRole.LEADER, initials: "PS" },
+      data: { name: "Pablo Sanchez", email: "ps@agropatagonico.com", password: DEFAULT_PASSWORD, role: UserRole.LEADER, initials: "PS" },
     }),
     prisma.user.create({
-      data: { name: "Fernando Perez", email: "fp@agropatagonico.com", role: UserRole.ADMIN, initials: "FP" },
+      data: { name: "Fernando Perez", email: "fp@agropatagonico.com", password: DEFAULT_PASSWORD, role: UserRole.ADMIN, initials: "FP" },
     }),
     prisma.user.create({
-      data: { name: "Ricardo Diaz", email: "rd@agropatagonico.com", role: UserRole.LEADER, initials: "RD" },
+      data: { name: "Ricardo Diaz", email: "rd@agropatagonico.com", password: DEFAULT_PASSWORD, role: UserRole.LEADER, initials: "RD" },
     }),
     prisma.user.create({
-      data: { name: "Sergio Suarez", email: "ss@agropatagonico.com", role: UserRole.LEADER, initials: "SS" },
+      data: { name: "Sergio Suarez", email: "ss@agropatagonico.com", password: DEFAULT_PASSWORD, role: UserRole.LEADER, initials: "SS" },
     }),
   ]);
 

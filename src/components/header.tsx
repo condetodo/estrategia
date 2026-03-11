@@ -2,14 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 
 const tabs = [
   { label: "Plan", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Mis Tareas", href: "/mis-tareas" },
+  { label: "Herramientas", href: "/herramientas" },
 ];
 
 export function Header({ company, year }: { company: string; year: number }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <header className="bg-primary text-white">
@@ -20,6 +24,29 @@ export function Header({ company, year }: { company: string; year: number }) {
             {year}
           </span>
         </div>
+
+        {/* User info */}
+        {session?.user && (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                {(session.user as any).initials ||
+                  session.user.name?.charAt(0) ||
+                  "?"}
+              </div>
+              <span className="hidden text-sm font-medium text-white/90 sm:inline">
+                {session.user.name}
+              </span>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              title="Cerrar sesión"
+            >
+              Salir
+            </button>
+          </div>
+        )}
       </div>
       <nav className="flex gap-1 px-6">
         {tabs.map((tab) => {

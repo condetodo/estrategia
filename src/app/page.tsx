@@ -6,29 +6,35 @@ import type { PlanWithDetails } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const plan = await prisma.strategicPlan.findFirst({
-    where: { status: "ACTIVE" },
-    include: {
-      directions: { orderBy: { number: "asc" } },
-      areas: {
-        orderBy: { order: "asc" },
-        include: {
-          items: {
-            orderBy: { order: "asc" },
-            include: {
-              tasks: { orderBy: { startMonth: "asc" } },
-              responsible: {
-                select: { id: true, name: true, initials: true },
-              },
-              direction: {
-                select: { id: true, number: true, description: true },
+  const [plan, users] = await Promise.all([
+    prisma.strategicPlan.findFirst({
+      where: { status: "ACTIVE" },
+      include: {
+        directions: { orderBy: { number: "asc" } },
+        areas: {
+          orderBy: { order: "asc" },
+          include: {
+            items: {
+              orderBy: { order: "asc" },
+              include: {
+                tasks: { orderBy: { startMonth: "asc" } },
+                responsible: {
+                  select: { id: true, name: true, initials: true },
+                },
+                direction: {
+                  select: { id: true, number: true, description: true },
+                },
               },
             },
           },
         },
       },
-    },
-  });
+    }),
+    prisma.user.findMany({
+      select: { id: true, name: true, initials: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   if (!plan) {
     return (
@@ -38,5 +44,5 @@ export default async function HomePage() {
     );
   }
 
-  return <PlanView plan={plan as PlanWithDetails} />;
+  return <PlanView plan={plan as PlanWithDetails} users={users} />;
 }

@@ -10,13 +10,13 @@ export function DirectionsBar({
   activeDirectionId: string | null;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-3 px-6 py-4">
+    <div className="flex gap-3 overflow-x-auto px-4 py-3 sm:px-6 sm:py-4">
       {directions.map((dir) => {
         const isActive = dir.id === activeDirectionId;
         return (
           <div
             key={dir.id}
-            className={`rounded-lg border px-3 py-2.5 transition-all ${
+            className={`min-w-[160px] flex-1 shrink-0 rounded-lg border px-3 py-2.5 transition-all sm:min-w-0 sm:shrink ${
               isActive
                 ? "border-primary-light bg-blue-50 shadow-sm"
                 : "border-border bg-surface"

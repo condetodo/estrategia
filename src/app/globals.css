@@ -34,3 +34,12 @@ body {
 .gantt-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--color-muted);
 }
+
+/* Hide scrollbar for horizontal scroll areas on mobile */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

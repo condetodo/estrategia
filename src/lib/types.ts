@@ -43,6 +43,12 @@ export type TaskData = {
   notes: string | null;
 };
 
+export type UserOption = {
+  id: string;
+  name: string;
+  initials: string | null;
+};
+
 export const MONTHS = [
   "Ene", "Feb", "Mar", "Abr", "May", "Jun",
   "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",

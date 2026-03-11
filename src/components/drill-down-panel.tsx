@@ -2,21 +2,32 @@
 
 import { useOptimistic, useTransition } from "react";
 import { updateTaskStatus } from "@/actions/tasks";
+import { assignResponsible } from "@/actions/items";
 import { MONTHS, STATUS_CONFIG } from "@/lib/types";
-import type { ItemWithTasks, TaskData } from "@/lib/types";
+import type { ItemWithTasks, TaskData, UserOption } from "@/lib/types";
 import type { TaskStatus } from "@/generated/prisma/enums";
 
 const statuses: TaskStatus[] = ["NOT_STARTED", "IN_PROGRESS", "COMPLETED", "BLOCKED"];
 
 export function DrillDownPanel({
   item,
+  users,
   onClose,
 }: {
   item: ItemWithTasks;
+  users: UserOption[];
   onClose: () => void;
 }) {
+  const [isPendingAssign, startAssignTransition] = useTransition();
+
+  function handleAssign(userId: string) {
+    startAssignTransition(async () => {
+      await assignResponsible(item.id, userId || null);
+    });
+  }
+
   return (
-    <div className="flex h-full w-96 flex-col border-l border-border bg-surface">
+    <div className="flex h-full w-full flex-col border-l border-border bg-surface lg:w-96">
       {/* Header */}
       <div className="flex items-start justify-between border-b border-border px-4 py-3">
         <div className="min-w-0 pr-2">
@@ -24,14 +35,25 @@ export function DrillDownPanel({
             {item.agenda || item.subtheme}
           </h2>
           <p className="mt-0.5 text-xs text-muted">{item.subtheme}</p>
-          {item.responsible && (
-            <p className="mt-1 text-xs text-muted">
-              Responsable:{" "}
-              <span className="font-medium text-foreground">
-                {item.responsible.name}
-              </span>
-            </p>
-          )}
+
+          {/* Responsible selector */}
+          <div className="mt-2">
+            <label className="text-xs text-muted">Responsable:</label>
+            <select
+              value={item.responsible?.id ?? ""}
+              onChange={(e) => handleAssign(e.target.value)}
+              disabled={isPendingAssign}
+              className="ml-1 rounded border border-border bg-background px-2 py-0.5 text-xs font-medium text-foreground focus:border-primary-light focus:outline-none disabled:opacity-50"
+            >
+              <option value="">Sin asignar</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name} ({u.initials})
+                </option>
+              ))}
+            </select>
+          </div>
+
           {item.direction && (
             <p className="mt-1 text-xs text-muted">
               Dir. {item.direction.number}:{" "}
