@@ -39,10 +39,8 @@
 - [x] 6.6 Gestión de planes en Herramientas (listar, activar, archivar, eliminar)
 
 ## Post-MVP (Productización)
-- [ ] Vista personalizada por rol (usuarios ven solo sus áreas)
+- [ ] Vista por rol (cada usuario ve sus áreas; admins ven todo)
 - [ ] Clonar plan del año anterior
-- [ ] Multi-tenant
-- [ ] Templates por industria
 - [ ] Notificaciones (email/WhatsApp)
 - [ ] Integración Google Calendar
 - [ ] Reportes automáticos con IA
