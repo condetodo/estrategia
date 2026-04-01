@@ -10,9 +10,11 @@ import type { PlanWithDetails, ItemWithTasks, UserOption } from "@/lib/types";
 export function PlanView({
   plan,
   users,
+  isAdmin,
 }: {
   plan: PlanWithDetails;
   users: UserOption[];
+  isAdmin: boolean;
 }) {
   const [selectedItem, setSelectedItem] = useState<ItemWithTasks | null>(null);
 
@@ -33,6 +35,8 @@ export function PlanView({
             areas={plan.areas}
             directions={plan.directions}
             users={users}
+            planId={plan.id}
+            isAdmin={isAdmin}
             onItemClick={setSelectedItem}
             selectedItemId={selectedItem?.id ?? null}
           />

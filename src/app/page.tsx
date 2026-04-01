@@ -64,5 +64,7 @@ export default async function HomePage() {
     );
   }
 
-  return <PlanView plan={plan as PlanWithDetails} users={users} />;
+  const isAdmin = (session.user as any).role === "ADMIN";
+
+  return <PlanView plan={plan as PlanWithDetails} users={users} isAdmin={isAdmin} />;
 }

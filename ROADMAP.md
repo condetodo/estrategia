@@ -38,6 +38,12 @@
 - [x] 6.5 Agregar/eliminar tareas inline en drill-down panel
 - [x] 6.6 Gestión de planes en Herramientas (listar, activar, archivar, eliminar)
 
+## Sprint 7: Edición Inline de Áreas
+- [x] 7.1 Server actions para CRUD de áreas (add, update, delete)
+- [x] 7.2 Toggle "Editar áreas" en Gantt (admin-only)
+- [x] 7.3 Area headers editables (nombre, color, eliminar con cascada)
+- [x] 7.4 Formulario inline para agregar área nueva
+
 ## Post-MVP (Productización)
 - [ ] Vista por rol (cada usuario ve sus áreas; admins ven todo)
 - [ ] Clonar plan del año anterior
