@@ -31,6 +31,22 @@ export async function createTask(data: {
   revalidatePath("/");
 }
 
+export async function updateTask(
+  taskId: string,
+  data: {
+    name?: string;
+    startMonth?: number;
+    endMonth?: number;
+    notes?: string | null;
+  }
+) {
+  await prisma.task.update({
+    where: { id: taskId },
+    data,
+  });
+  revalidatePath("/");
+}
+
 export async function deleteTask(taskId: string) {
   await prisma.task.delete({ where: { id: taskId } });
   revalidatePath("/");
