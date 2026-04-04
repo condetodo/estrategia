@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useOptimistic, useTransition } from "react";
-import { updateTaskStatus, createTask, deleteTask } from "@/actions/tasks";
-import { assignResponsible, deleteItem } from "@/actions/items";
+import { updateTaskStatus, createTask, deleteTask, updateTask } from "@/actions/tasks";
+import { assignResponsible, deleteItem, updateItem } from "@/actions/items";
 import { MONTHS, STATUS_CONFIG } from "@/lib/types";
 import type { ItemWithTasks, TaskData, UserOption } from "@/lib/types";
 import type { TaskStatus } from "@/generated/prisma/enums";
@@ -23,6 +23,12 @@ export function DrillDownPanel({
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
 
+  // Inline editing state for item fields
+  const [editingSubtheme, setEditingSubtheme] = useState(false);
+  const [subtheme, setSubtheme] = useState(item.subtheme);
+  const [editingAgenda, setEditingAgenda] = useState(false);
+  const [agenda, setAgenda] = useState(item.agenda ?? "");
+
   function handleAssign(userId: string) {
     startAssignTransition(async () => {
       await assignResponsible(item.id, userId || null);
@@ -36,15 +42,125 @@ export function DrillDownPanel({
     });
   }
 
+  function handleSaveSubtheme() {
+    const trimmed = subtheme.trim();
+    if (!trimmed) {
+      setSubtheme(item.subtheme);
+      setEditingSubtheme(false);
+      return;
+    }
+    setEditingSubtheme(false);
+    if (trimmed !== item.subtheme) {
+      startAssignTransition(async () => {
+        await updateItem(item.id, { subtheme: trimmed });
+      });
+    }
+  }
+
+  function handleSaveAgenda() {
+    const trimmed = agenda.trim();
+    setEditingAgenda(false);
+    if (trimmed !== (item.agenda ?? "")) {
+      startAssignTransition(async () => {
+        await updateItem(item.id, { agenda: trimmed || undefined });
+      });
+    }
+  }
+
+  // Determine what to show as title: agenda if present, else subtheme
+  const titleIsAgenda = Boolean(item.agenda);
+
   return (
     <div className="flex h-full w-full flex-col border-l border-border bg-surface lg:w-96">
       {/* Header */}
       <div className="flex items-start justify-between border-b border-border px-4 py-3">
         <div className="min-w-0 pr-2">
-          <h2 className="text-sm font-bold text-foreground">
-            {item.agenda || item.subtheme}
-          </h2>
-          <p className="mt-0.5 text-xs text-muted">{item.subtheme}</p>
+          {/* Editable title (agenda or subtheme) */}
+          {titleIsAgenda ? (
+            editingAgenda ? (
+              <input
+                type="text"
+                value={agenda}
+                onChange={(e) => setAgenda(e.target.value)}
+                onBlur={handleSaveAgenda}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveAgenda();
+                  if (e.key === "Escape") {
+                    setAgenda(item.agenda ?? "");
+                    setEditingAgenda(false);
+                  }
+                }}
+                autoFocus
+                className="w-full rounded border border-border bg-background px-1 text-sm font-bold text-foreground focus:border-primary focus:outline-none"
+              />
+            ) : (
+              <h2
+                className="cursor-text text-sm font-bold text-foreground hover:bg-surface-hover"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingAgenda(true);
+                }}
+              >
+                {item.agenda}
+              </h2>
+            )
+          ) : editingSubtheme ? (
+            <input
+              type="text"
+              value={subtheme}
+              onChange={(e) => setSubtheme(e.target.value)}
+              onBlur={handleSaveSubtheme}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveSubtheme();
+                if (e.key === "Escape") {
+                  setSubtheme(item.subtheme);
+                  setEditingSubtheme(false);
+                }
+              }}
+              autoFocus
+              className="w-full rounded border border-border bg-background px-1 text-sm font-bold text-foreground focus:border-primary focus:outline-none"
+            />
+          ) : (
+            <h2
+              className="cursor-text text-sm font-bold text-foreground hover:bg-surface-hover"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingSubtheme(true);
+              }}
+            >
+              {item.subtheme}
+            </h2>
+          )}
+
+          {/* Editable subtitle (subtheme, shown when title is agenda) */}
+          {titleIsAgenda &&
+            (editingSubtheme ? (
+              <input
+                type="text"
+                value={subtheme}
+                onChange={(e) => setSubtheme(e.target.value)}
+                onBlur={handleSaveSubtheme}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveSubtheme();
+                  if (e.key === "Escape") {
+                    setSubtheme(item.subtheme);
+                    setEditingSubtheme(false);
+                  }
+                }}
+                autoFocus
+                className="mt-0.5 w-full rounded border border-border bg-background px-1 text-xs text-foreground focus:border-primary focus:outline-none"
+              />
+            ) : (
+              <p
+                className="mt-0.5 cursor-text text-xs text-muted hover:bg-surface-hover"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingSubtheme(true);
+                }}
+              >
+                {item.subtheme}
+              </p>
+            ))}
 
           {/* Responsible selector */}
           <div className="mt-2">
@@ -182,6 +298,19 @@ function TaskCard({ task }: { task: TaskData }) {
   const [isPendingDelete, startDeleteTransition] = useTransition();
   const config = STATUS_CONFIG[optimisticStatus];
 
+  // Inline editing state
+  const [editingName, setEditingName] = useState(false);
+  const [name, setName] = useState(task.name);
+
+  const [editingMonths, setEditingMonths] = useState(false);
+  const [startMonth, setStartMonth] = useState(task.startMonth);
+  const [endMonth, setEndMonth] = useState(task.endMonth);
+
+  const [showNotes, setShowNotes] = useState(Boolean(task.notes));
+  const [notes, setNotes] = useState(task.notes ?? "");
+
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   function handleStatusChange(newStatus: TaskStatus) {
     startTransition(async () => {
       setOptimisticStatus(newStatus);
@@ -195,6 +324,37 @@ function TaskCard({ task }: { task: TaskData }) {
     });
   }
 
+  function handleSaveName() {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setName(task.name);
+      setEditingName(false);
+      return;
+    }
+    setEditingName(false);
+    if (trimmed !== task.name) {
+      startTransition(async () => {
+        await updateTask(task.id, { name: trimmed });
+      });
+    }
+  }
+
+  function handleMonthChange(newStart: number, newEnd: number) {
+    const finalEnd = Math.max(newEnd, newStart);
+    setStartMonth(newStart);
+    setEndMonth(finalEnd);
+    startTransition(async () => {
+      await updateTask(task.id, { startMonth: newStart, endMonth: finalEnd });
+    });
+  }
+
+  function handleSaveNotes() {
+    const trimmed = notes.trim();
+    startTransition(async () => {
+      await updateTask(task.id, { notes: trimmed || null });
+    });
+  }
+
   return (
     <div
       className={`group rounded-lg border border-border p-3 transition-opacity ${
@@ -202,17 +362,99 @@ function TaskCard({ task }: { task: TaskData }) {
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">{task.name}</p>
-          <p className="mt-0.5 text-xs text-muted">
-            {MONTHS[task.startMonth - 1]}
-            {task.endMonth !== task.startMonth &&
-              ` – ${MONTHS[task.endMonth - 1]}`}
-          </p>
-          {task.notes && (
-            <p className="mt-1 text-xs leading-relaxed text-muted">
-              {task.notes}
+        <div className="min-w-0 flex-1">
+          {/* Editable name */}
+          {editingName ? (
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={handleSaveName}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveName();
+                if (e.key === "Escape") {
+                  setName(task.name);
+                  setEditingName(false);
+                }
+              }}
+              autoFocus
+              className="w-full rounded border border-border bg-background px-1 text-sm font-medium text-foreground focus:border-primary focus:outline-none"
+            />
+          ) : (
+            <p
+              className="cursor-text text-sm font-medium text-foreground hover:bg-surface-hover"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingName(true);
+              }}
+            >
+              {task.name}
             </p>
+          )}
+
+          {/* Editable months */}
+          {editingMonths ? (
+            <div className="mt-1 flex items-center gap-1.5">
+              <select
+                value={startMonth}
+                onChange={(e) => handleMonthChange(Number(e.target.value), endMonth)}
+                className="rounded border border-border bg-background px-1 py-0.5 text-xs text-foreground focus:border-primary focus:outline-none"
+              >
+                {MONTHS.map((m, i) => (
+                  <option key={i} value={i + 1}>{m}</option>
+                ))}
+              </select>
+              <span className="text-xs text-muted">–</span>
+              <select
+                value={endMonth}
+                onChange={(e) => handleMonthChange(startMonth, Number(e.target.value))}
+                className="rounded border border-border bg-background px-1 py-0.5 text-xs text-foreground focus:border-primary focus:outline-none"
+              >
+                {MONTHS.map((m, i) => (
+                  <option key={i} value={i + 1} disabled={i + 1 < startMonth}>{m}</option>
+                ))}
+              </select>
+              <button
+                onClick={() => setEditingMonths(false)}
+                className="rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-white hover:bg-primary-light"
+              >
+                OK
+              </button>
+            </div>
+          ) : (
+            <p
+              className="mt-0.5 cursor-text text-xs text-muted hover:bg-surface-hover"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingMonths(true);
+              }}
+            >
+              {MONTHS[task.startMonth - 1]}
+              {task.endMonth !== task.startMonth &&
+                ` – ${MONTHS[task.endMonth - 1]}`}
+            </p>
+          )}
+
+          {/* Editable notes */}
+          {showNotes ? (
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              onBlur={handleSaveNotes}
+              rows={2}
+              className="mt-1 w-full resize-none rounded border border-border bg-background px-1.5 py-1 text-xs leading-relaxed text-foreground placeholder:text-muted focus:border-primary focus:outline-none"
+              placeholder="Agregar nota..."
+            />
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowNotes(true);
+              }}
+              className="mt-1 text-xs text-muted hover:text-primary"
+            >
+              + Nota
+            </button>
           )}
         </div>
         <div className="flex items-center gap-1.5">
@@ -222,16 +464,34 @@ function TaskCard({ task }: { task: TaskData }) {
           >
             {config.label}
           </span>
-          <button
-            onClick={handleDelete}
-            disabled={isPendingDelete}
-            className="shrink-0 rounded p-0.5 text-muted opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
-            title="Eliminar tarea"
-          >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {/* Delete with confirmation */}
+          {confirmDelete ? (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleDelete}
+                disabled={isPendingDelete}
+                className="rounded bg-red-500 px-1.5 py-0.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+              >
+                Sí
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="rounded px-1.5 py-0.5 text-xs text-muted hover:text-foreground"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="shrink-0 rounded p-0.5 text-muted opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+              title="Eliminar tarea"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
