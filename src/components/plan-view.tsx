@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Header } from "@/components/header";
 
 import { GanttView } from "@/components/gantt-view";
+import { WorkloadView } from "@/components/workload-view";
 import { DrillDownPanel } from "@/components/drill-down-panel";
 import type { PlanWithDetails, ItemWithTasks, UserOption } from "@/lib/types";
 
@@ -33,6 +34,7 @@ export function PlanView({
             onItemClick={setSelectedItem}
             selectedItemId={selectedItem?.id ?? null}
           />
+          <WorkloadView areas={plan.areas} />
         </div>
 
         {selectedItem && (
