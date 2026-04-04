@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Header } from "@/components/header";
-import { DirectionsBar } from "@/components/directions-bar";
+
 import { GanttView } from "@/components/gantt-view";
 import { DrillDownPanel } from "@/components/drill-down-panel";
 import type { PlanWithDetails, ItemWithTasks, UserOption } from "@/lib/types";
@@ -18,16 +18,9 @@ export function PlanView({
 }) {
   const [selectedItem, setSelectedItem] = useState<ItemWithTasks | null>(null);
 
-  const activeDirectionId = selectedItem?.direction?.id ?? null;
-
   return (
     <div className="flex h-screen flex-col">
       <Header company={plan.company} year={plan.year} />
-
-      <DirectionsBar
-        directions={plan.directions}
-        activeDirectionId={activeDirectionId}
-      />
 
       <div className="relative flex min-h-0 flex-1">
         <div className="flex-1 overflow-y-auto">
