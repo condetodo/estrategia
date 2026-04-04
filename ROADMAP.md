@@ -44,6 +44,13 @@
 - [x] 7.3 Area headers editables (nombre, color, eliminar con cascada)
 - [x] 7.4 Formulario inline para agregar área nueva
 
+## Sprint 8: Gantt Enhancements
+- [x] 8.1 Server action `updateTask` para edición inline
+- [x] 8.2 Barras de Gantt reales (reemplazan puntitos con barras de duración y progreso)
+- [x] 8.3 Edición inline de tareas en drill-down (nombre, meses, notas, confirmación de borrado)
+- [x] 8.4 Edición inline de items en drill-down (subtema, agenda)
+- [x] 8.5 Heatmap de carga por persona (colapsable, debajo del Gantt)
+
 ## Post-MVP (Productización)
 - [ ] Vista por rol (cada usuario ve sus áreas; admins ven todo)
 - [ ] Clonar plan del año anterior
