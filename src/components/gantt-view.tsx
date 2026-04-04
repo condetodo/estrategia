@@ -4,7 +4,7 @@ import { useState, useTransition, useRef, useEffect } from "react";
 import { MONTHS, STATUS_CONFIG, AREA_COLORS } from "@/lib/types";
 import { createItem } from "@/actions/items";
 import { addArea, updateArea, deleteArea } from "@/actions/areas";
-import type { AreaWithItems, ItemWithTasks, TaskData, DirectionData, UserOption } from "@/lib/types";
+import type { AreaWithItems, ItemWithTasks, DirectionData, UserOption } from "@/lib/types";
 
 export function GanttView({
   areas,
@@ -478,6 +478,34 @@ function ItemRow({
 }) {
   const completedTasks = item.tasks.filter((t) => t.status === "COMPLETED").length;
   const totalTasks = item.tasks.length;
+  const hasBlocked = item.tasks.some((t) => t.status === "BLOCKED");
+
+  // Determine bar color based on progress state
+  let barColor: string;
+  let barBg: string;
+  if (hasBlocked) {
+    barColor = "#dc2626";
+    barBg = "#fee2e2";
+  } else if (totalTasks > 0 && completedTasks === totalTasks) {
+    barColor = "#16a34a";
+    barBg = "#dcfce7";
+  } else if (completedTasks > 0) {
+    barColor = "#2563eb";
+    barBg = "#dbeafe";
+  } else {
+    barColor = "#94a3b8";
+    barBg = "#f1f5f9";
+  }
+
+  // Calculate bar span from earliest startMonth to latest endMonth
+  const minMonth = totalTasks > 0 ? Math.min(...item.tasks.map((t) => t.startMonth)) : 0;
+  const maxMonth = totalTasks > 0 ? Math.max(...item.tasks.map((t) => t.endMonth)) : 0;
+  const barLeft = ((minMonth - 1) / 12) * 100;
+  const barWidth = ((maxMonth - minMonth + 1) / 12) * 100;
+
+  const tooltipText = totalTasks > 0
+    ? `${item.agenda || item.subtheme}\n${completedTasks}/${totalTasks} completadas${item.responsible ? `\nResponsable: ${item.responsible.name}` : ""}`
+    : undefined;
 
   return (
     <div
@@ -501,11 +529,6 @@ function ItemRow({
             </p>
             <div className="flex items-center gap-2 text-xs text-muted">
               <span>{item.subtheme}</span>
-              {totalTasks > 0 && (
-                <span>
-                  {completedTasks}/{totalTasks}
-                </span>
-              )}
               {item.responsible && (
                 <span className="rounded bg-surface-hover px-1.5 py-0.5 font-medium">
                   {item.responsible.initials}
@@ -516,38 +539,33 @@ function ItemRow({
         </div>
       </div>
 
-      {/* Timeline grid */}
-      <div className="flex flex-1">
-        {MONTHS.map((_, monthIndex) => {
-          const monthTasks = item.tasks.filter(
-            (t) => monthIndex + 1 >= t.startMonth && monthIndex + 1 <= t.endMonth
-          );
-          return (
-            <div
-              key={monthIndex}
-              className="flex flex-1 items-center justify-center border-l border-border/30 py-2"
-            >
-              {monthTasks.map((task) => (
-                <TaskDot key={task.id} task={task} />
-              ))}
-            </div>
-          );
-        })}
+      {/* Timeline grid with Gantt bar */}
+      <div className="relative flex flex-1">
+        {MONTHS.map((_, monthIndex) => (
+          <div
+            key={monthIndex}
+            className="flex flex-1 items-center justify-center border-l border-border/30 py-4"
+          />
+        ))}
+        {totalTasks > 0 && (
+          <div
+            className="absolute top-1/2 flex -translate-y-1/2 items-center justify-center overflow-hidden rounded text-xs font-medium"
+            style={{
+              left: `${barLeft}%`,
+              width: `${barWidth}%`,
+              height: "1.5rem",
+              backgroundColor: barBg,
+              border: `1.5px solid ${barColor}40`,
+              color: barColor,
+            }}
+            title={tooltipText}
+          >
+            <span className="truncate px-1.5">
+              {completedTasks}/{totalTasks}
+            </span>
+          </div>
+        )}
       </div>
     </div>
-  );
-}
-
-function TaskDot({ task }: { task: TaskData }) {
-  const config = STATUS_CONFIG[task.status];
-  return (
-    <div
-      className="mx-0.5 h-3.5 w-3.5 rounded-full border-2 transition-transform hover:scale-125"
-      style={{
-        backgroundColor: config.bg,
-        borderColor: config.color,
-      }}
-      title={`${task.name} — ${config.label}`}
-    />
   );
 }
